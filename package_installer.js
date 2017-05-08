@@ -7,7 +7,7 @@ var input = ['KittenService: CamelCaser', 'CamelCaser: '];
                    - need to be installed
 */
 
-var t = module.exports.PACKAGE_ORDER = function(packages) {
+var orderPackages = module.exports.PACKAGE_ORDER = function(packages) {
     // 1. verify 'packages' is of type array
     // 2. check if 'packages' is not equal to length 0
     // 3. check if 'packages' is equal to size 1
@@ -27,17 +27,13 @@ var t = module.exports.PACKAGE_ORDER = function(packages) {
 */
 
 module.exports.RUN_TESTS = function() {
-    console.log(testPackageInstaller([], ''));
-    console.log(testPackageInstaller(['A: '], 'A'));
-    console.log(testPackageInstaller([], 'CamelCaser, KittenService: CamelCaser'));
+    console.log(TestPackageInstaller([], ''));
+    console.log(TestPackageInstaller(['A: '], 'A'));
+    console.log(TestPackageInstaller([], 'CamelCaser, KittenService: CamelCaser'));
 }
 
-function testPackageInstaller(input, expected) {
-    var result = t(input);
-    // are they even the same length?
-    if(result.length !== expected.length) {
-        return 'FAIL';
-    }
+function TestPackageInstaller(input, expected) {
+    var result = orderPackages(input);
 
     for(var i = 0; i < expected.length; ++i) {
         if(!result[i].match(expected[i])) {
