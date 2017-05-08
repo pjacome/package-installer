@@ -27,19 +27,40 @@ var orderPackages = module.exports.PACKAGE_ORDER = function(packages) {
 */
 
 module.exports.RUN_TESTS = function() {
-    console.log(TestPackageInstaller([], ''));
-    console.log(TestPackageInstaller(['A: '], 'A'));
-    console.log(TestPackageInstaller([], 'CamelCaser, KittenService: CamelCaser'));
+    Print(TestPackageInstaller([], ''));
+    Print(TestPackageInstaller(['A: '], 'A'));
+    Print(TestPackageInstaller([], 'CamelCaser, KittenService'));
+    Print(TestPackageInstaller([], 'A, C, B'));
+    Print(TestPackageInstaller([], '')); 
+    // 5
+    Print(TestPackageInstaller([], ''));
+    Print(TestPackageInstaller([], ''));
+    Print(TestPackageInstaller([], ''));
+    Print(TestPackageInstaller([], ''));
+    Print(TestPackageInstaller([], '')); 
+    // 10
+    Print(TestPackageInstaller([], ''));
+    Print(TestPackageInstaller([], ''));
+    Print(TestPackageInstaller([], ''));
+    Print(TestPackageInstaller([], ''));
+    Print(TestPackageInstaller([], ''));
+    // 15
 }
 
 function TestPackageInstaller(input, expected) {
     var result = orderPackages(input);
 
-    for(var i = 0; i < expected.length; ++i) {
-        if(!result[i].match(expected[i])) {
-            return 'FAIL';
-        }
+    if(result.match(expected)) {
+        return 'PASS';
     }
 
-    return 'PASS';
+    return 'FAIL';
+}
+
+/*
+    Simpler console.log function to save a bit of time.
+*/
+
+function Print(string) {
+    console.log(string);
 }
