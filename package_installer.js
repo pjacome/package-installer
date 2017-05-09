@@ -9,14 +9,14 @@ var orderPackages = module.exports.PACKAGE_ORDER = function(packages) {
     var dependentPackages = {};
     packages.forEach(function(val, i) {
         // The input is split at the occurrance of ": " because the write up
-        // showed the input would be structured like so
+        // showed the input would be structured like that
         var package = val.split(': ')[0];
         var dependency = val.split(': ')[1];
         if(dependency === '') {
             independentPackages.push(package);
         } else {
             dependentPackages[package] = {
-                d: dependency,  // d = dependents
+                d: dependency,  // d = dependency
                 v: false        // v = visited
             };
         }
@@ -30,8 +30,8 @@ var orderPackages = module.exports.PACKAGE_ORDER = function(packages) {
             continue;
         }
 
-        var array = DeeperAndDeeper(dependentPackages, package);
-        stack = stack.concat(array);
+        var orderedDependentPackages = DeeperAndDeeper(dependentPackages, package);
+        stack = stack.concat(orderedDependentPackages);
     }
 
     var list = independentPackages.concat(stack);
@@ -41,7 +41,6 @@ var orderPackages = module.exports.PACKAGE_ORDER = function(packages) {
             throw new Error('FAIL: Contains Cycle');
         }
     } catch(err) {
-        // console.log(err.message);
         return err.message;
     }
 
@@ -67,15 +66,19 @@ var orderPackages = module.exports.PACKAGE_ORDER = function(packages) {
 */
 function DeeperAndDeeper(map, start) {
     if(map[start]) {
+        // check if the start has a dependency
         if(map[map[start].d]) {
+            // check if start's dependency has been visited already
             if(map[map[start].d].v) {
                 return [start];
             }
         }
+        // set start's visited property to true
         map[start].v = true;
-        var x = DeeperAndDeeper(map, map[start].d);
-        var w = x.concat([start]);
-        return w;
+        // get list from one level deeer
+        var recursedList = DeeperAndDeeper(map, map[start].d);
+        var completeList = recursedList.concat([start]);
+        return completeList;
     }
     return [];
 }
@@ -94,7 +97,7 @@ function HasDuplicates(array) {
     Runs all tests.
 */
 module.exports.RUN_TESTS = function() {
-    Print('***********************\n** Running Tests ... **\n***********************');
+    Print('\n\t***************************\n\t** ... Running Tests ... **\n\t***************************');
     Print(TestPackageInstaller([], ''));
     Print(TestPackageInstaller(['A: '], 'A'));
     Print(TestPackageInstaller(['KittenService: CamelCaser', 'CamelCaser: '], 'CamelCaser, KittenService'));
