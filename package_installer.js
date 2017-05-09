@@ -6,60 +6,63 @@
 */
 
 var orderPackages = module.exports.PACKAGE_ORDER = function(packages) {
-    // 1. verify 'packages' is of type array
-    // section 1.
-
-    // section 2.
-    if(packages.length === 0)
-        return '';
-    
-    // section 3.
-    if(packages.length === 1)
-        return packages[0].split(': ')[0];
-
-    // section 4.
-    var dependentList = '';
-    var nonDependentList = '';
-    var hash = {};
-
+    var independentPackages = [];
+    var dependentPackages = {};
     packages.forEach(function(val, i) {
         var package = val.split(': ')[0];
         var dependency = val.split(': ')[1];
         if(dependency === '') {
-            nonDependentList += package + ', ';
+            independentPackages.push(package);
         } else {
-            hash[package] = {dep: dependency, marked: false};
-            // dependentList += package + ', ';
+            dependentPackages[package] = {
+                d: dependency,  // d = dependents
+                v: false        // v = visited
+            };
         }
     });
-    
-    dependentList = OrderDependentPackages(hash, null);
-    
-    var list = nonDependentList + dependentList;
-    // remove the last occurring ", "
-    // list = list.substring(0, list.length - 2);
 
-    return list;
+    var stack = [];
+    for(var package in dependentPackages) {
+        if(!dependentPackages[package].v) {
+            dependentPackages[package].v = true;
+        } else {
+            continue;
+        }
+
+        var array = DeeperAndDeeper(dependentPackages, package);
+        stack = stack.concat(array);
+    }
+
+    var list = independentPackages.concat(stack);
+    var result = '';
+    for(var i = 0; i < list.length; ++i) {
+        if(i === list.length - 1) {
+            result = result + list[i];
+        } else {
+            result += list[i] + ', ';
+        }
+    }
+
+    return result;
 }
 
 /*
     Runs all tests.
 */
-
 module.exports.RUN_TESTS = function() {
-    // Print(TestPackageInstaller([], ''));
-    // Print(TestPackageInstaller(['A: '], 'A'));
-    // Print(TestPackageInstaller(['KittenService: CamelCaser', 'CamelCaser: '], 'CamelCaser, KittenService'));
-    // Print(TestPackageInstaller(['A: ', 'B: C', 'C: '], 'A, C, B'));
-    // Print(TestPackageInstaller(['A: ', 'B: ', 'C: ', 'D: ', 'E: ', 'F: '], 'A, B, C, D, E, F')); 
-    // // 5
-    // Print(TestPackageInstaller(['A: ', 'B: ', 'C: ', 'D: ', 'E: B', 'F: '], 'A, B, C, D, F, E'));
-    // Print(TestPackageInstaller(['B: C', 'A: B', 'C: '], 'C, B, A'));
+    Print(TestPackageInstaller([], ''));
+    Print(TestPackageInstaller(['A: '], 'A'));
+    Print(TestPackageInstaller(['KittenService: CamelCaser', 'CamelCaser: '], 'CamelCaser, KittenService'));
+    Print(TestPackageInstaller(['A: ', 'B: C', 'C: '], 'A, C, B'));
+    Print(TestPackageInstaller(['A: ', 'B: ', 'C: ', 'D: ', 'E: ', 'F: '], 'A, B, C, D, E, F')); 
+    // 5
+    Print(TestPackageInstaller(['A: ', 'B: ', 'C: ', 'D: ', 'E: B', 'F: '], 'A, B, C, D, F, E'));
+    Print(TestPackageInstaller(['B: C', 'A: B', 'C: '], 'C, B, A'));
     Print(TestPackageInstaller(['A: B', 'B: C', 'C: D', 'D: E', 'E: F', 'F: '], 'F, E, D, C, B, A'));
     Print(TestPackageInstaller(['B: C', 'C: D', 'A: B', 'D: E', 'E: F', 'F: '], 'F, E, D, C, B, A'));
-    // Print(TestPackageInstaller(['A: B', 'B: A'], 'A, B, A') + ': Contains a Cycle');
-    // Print(TestPackageInstaller(['A: ', 'B: A'], 'A, B'));
-    // Print(TestPackageInstaller(['KittenService: ', 'Leetmeme: Cyberportal', 'Cyberportal: Ice', 'CamelCaser: KittenService', 'Fraudstream: Leetmeme', 'Ice: '], 'KittenService, Ice, Cyberportal, Leetmeme, CamelCaser, Fraudstream')); 
+    Print(TestPackageInstaller(['A: B', 'B: A'], 'A, B, A') + ': Contains a Cycle');
+    Print(TestPackageInstaller(['A: ', 'B: A'], 'A, B'));
+    Print(TestPackageInstaller(['KittenService: ', 'Leetmeme: Cyberportal', 'Cyberportal: Ice', 'CamelCaser: KittenService', 'Fraudstream: Leetmeme', 'Ice: '], 'KittenService, Ice, Cyberportal, Leetmeme, CamelCaser, Fraudstream')); 
     // 10
 }
 
@@ -70,7 +73,6 @@ module.exports.RUN_TESTS = function() {
     returns String - 'PASS' if the expected matches the result
                    - 'FAIL' otherwise
 */
-
 function TestPackageInstaller(input, expected) {
     var result = orderPackages(input);
     console.log(result + ' === ' + expected);
@@ -87,40 +89,24 @@ function TestPackageInstaller(input, expected) {
     @start - TODO
     returns String - which will be the order of the packages
 */
-
-function OrderDependentPackages(map, start) {
-    var result = '';
-    if(start === null) {
-        for(var package in map) {
-            if(!map[package].marked) {
-                start = package;
-                break;
+function DeeperAndDeeper(map, start) {
+    if(map[start]) {
+        if(map[map[start].d]) {
+            if(map[map[start].d].v) {
+                return [start];
             }
         }
+        var x = DeeperAndDeeper(map, map[start].d);
+        map[start].v = true;
+        var w = x.concat([start]);
+        return w;
     }
-
-    var ref = map[start];
-    console.log(start,'->', ref);
-    // console.log();
-    // check if start's dependent is in map
-    if(map[map[start].dep]) {
-        console.log('inside', start);
-        var str = OrderDependentPackages(map, map[start].dep);
-        result += str + ', ' + start;
-        console.log('result:',result);
-        return result;
-    } else {//if(!map[start.dep]) {
-        console.log('outside', start);
-        return start;
-    }
-
-    return result;
+    return [];
 }
 
 /*
     Simpler console.log function to save a bit of time.
 */
-
 function Print(result) {
     console.log(result);
 }
