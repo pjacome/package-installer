@@ -91,13 +91,19 @@ module.exports.RUN_TESTS = function() {
     // Print(TestPackageInstaller(['B: C', 'A: B', 'C: '], 'C, B, A'));
     // Print(TestPackageInstaller(['A: B', 'B: C', 'C: D', 'D: E', 'E: F', 'F: '], 'F, E, D, C, B, A'));
     // Print(TestPackageInstaller(['B: C', 'C: D', 'A: B', 'D: E', 'E: F', 'F: '], 'F, E, D, C, B, A'));
-    Print(TestPackageInstaller(['A: B', 'B: A'], 'A, B, A'));
+    // // Print(TestPackageInstaller(['A: B', 'B: A'], 'FAIL: Contains Cycle'));
     // Print(TestPackageInstaller(['A: ', 'B: A'], 'A, B'));
     // Print(TestPackageInstaller(['KittenService: ', 'Leetmeme: Cyberportal', 'Cyberportal: Ice', 'CamelCaser: KittenService', 'Fraudstream: Leetmeme', 'Ice: '], 'KittenService, Ice, Cyberportal, Leetmeme, CamelCaser, Fraudstream')); 
     // // 10
     // Print(TestPackageInstaller(['D: ', 'C: D', 'B: C', 'A: B'], 'D, C, B, A'));
     // Print(TestPackageInstaller(['B: C', 'C: D', 'D: ', 'A: B'], 'D, C, B, A'));
     // Print(TestPackageInstaller(['B: C', 'C: D', 'D: ', 'A: D'], 'D, C, B, A'));
+    var alphabet = ['A: ', 'B: E', 'C: Z', 'D: A', 'E: F', 'F: X', 'X: B'];
+    // Print(TestPackageInstaller(alphabet, 'FAIL: Contains Cycle'));
+    alphabet = [
+        'A: B', 'B: C', 'C: D', 'D: E', 'E: F', 'F: G', 'G: H', 'H: '
+    ];
+    Print(TestPackageInstaller(alphabet, 'H, G, F, E, D, C, B, A'));
     Print(TestPackageInstaller(['KittenService: ', 'Leetmeme: Cyberportal', 'Cyberportal: Ice', 'CamelCaser: KittenService', 'Fraudstream: ', 'Ice: Leetmeme'], 'KittenService, Ice, Cyberportal, Leetmeme, CamelCaser, Fraudstream'));
 }
 
@@ -110,7 +116,6 @@ module.exports.RUN_TESTS = function() {
 */
 function TestPackageInstaller(input, expected) {
     var result = orderPackages(input);
-    console.log(result + ' === ' + expected);
     if(result === expected) {
         return 'PASS';
     }
