@@ -40,7 +40,7 @@ var orderPackages = module.exports.PACKAGE_ORDER = function(packages) {
             continue;
         }
 
-        var orderedDependentPackages = DeeperAndDeeper(dependentPackages, package);
+        var orderedDependentPackages = DeeperAndDeeper(dependentPackages, package, independentPackages);
         stack = stack.concat(orderedDependentPackages);
     }
 
@@ -72,9 +72,10 @@ var orderPackages = module.exports.PACKAGE_ORDER = function(packages) {
     Orders only the packages that have dependencies
     @map - contains the packages that need to be ordered correctly
     @start - TODO
+    @independentPackages - array of packages that have no dependencies
     returns String - which will be the order of the packages
 */
-function DeeperAndDeeper(map, start) {
+function DeeperAndDeeper(map, start, independentPackages) {
     if(map[start]) {
         // check if the start has a dependency
         if(map[map[start].d]) {
@@ -86,9 +87,11 @@ function DeeperAndDeeper(map, start) {
         // set start's visited property to true
         map[start].v = true;
         // get list from one level deeer
-        var recursedList = DeeperAndDeeper(map, map[start].d);
+        var recursedList = DeeperAndDeeper(map, map[start].d, independentPackages);
         var completeList = recursedList.concat([start]);
         return completeList;
+    } else if(!StartExistsInOtherList(start, independentPackages)) {
+        independentPackages.push(start);
     }
     return [];
 }
@@ -101,6 +104,21 @@ function DeeperAndDeeper(map, start) {
 */
 function HasDuplicates(array) {
     return (new Set(array)).size !== array.length;
+}
+
+/*
+    Checks to see if package exists in the independent packages list
+    @package - the package to see if it exists
+    @packages - list of packages that will be checked
+    returns Boolean - if TRUE then package does exist
+                    - if FALSE then packaage does not exist
+*/
+function StartExistsInOtherList(package, packages) {
+    for(var i = 0; i < packages.length; ++i) {
+        if(package === packages[i])
+            return true;
+    }
+    return false;
 }
 
 /*
