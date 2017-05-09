@@ -35,7 +35,7 @@ var orderPackages = module.exports.PACKAGE_ORDER = function(packages) {
 
     var list = independentPackages.concat(stack);
     if(HasDuplicates(list)) {
-        throw 'FAIL: Contains Cycle';
+        throw 'FAIL: Contains Cycle: ' + list.toString();
     }
 
     // below is extra code to just conform to the output as shown in the write up
@@ -65,8 +65,8 @@ function DeeperAndDeeper(map, start) {
                 return [start];
             }
         }
-        var x = DeeperAndDeeper(map, map[start].d);
         map[start].v = true;
+        var x = DeeperAndDeeper(map, map[start].d);
         var w = x.concat([start]);
         return w;
     }
@@ -81,29 +81,31 @@ function HasDuplicates(array) {
     Runs all tests.
 */
 module.exports.RUN_TESTS = function() {
-    // Print(TestPackageInstaller([], ''));
-    // Print(TestPackageInstaller(['A: '], 'A'));
-    // Print(TestPackageInstaller(['KittenService: CamelCaser', 'CamelCaser: '], 'CamelCaser, KittenService'));
-    // Print(TestPackageInstaller(['A: ', 'B: C', 'C: '], 'A, C, B'));
-    // Print(TestPackageInstaller(['A: ', 'B: ', 'C: ', 'D: ', 'E: ', 'F: '], 'A, B, C, D, E, F')); 
-    // // 5
-    // Print(TestPackageInstaller(['A: ', 'B: ', 'C: ', 'D: ', 'E: B', 'F: '], 'A, B, C, D, F, E'));
-    // Print(TestPackageInstaller(['B: C', 'A: B', 'C: '], 'C, B, A'));
-    // Print(TestPackageInstaller(['A: B', 'B: C', 'C: D', 'D: E', 'E: F', 'F: '], 'F, E, D, C, B, A'));
-    // Print(TestPackageInstaller(['B: C', 'C: D', 'A: B', 'D: E', 'E: F', 'F: '], 'F, E, D, C, B, A'));
-    // // Print(TestPackageInstaller(['A: B', 'B: A'], 'FAIL: Contains Cycle'));
-    // Print(TestPackageInstaller(['A: ', 'B: A'], 'A, B'));
-    // Print(TestPackageInstaller(['KittenService: ', 'Leetmeme: Cyberportal', 'Cyberportal: Ice', 'CamelCaser: KittenService', 'Fraudstream: Leetmeme', 'Ice: '], 'KittenService, Ice, Cyberportal, Leetmeme, CamelCaser, Fraudstream')); 
+    Print('***********************\n** Running Tests ... **\n***********************');
+    Print(TestPackageInstaller([], ''));
+    Print(TestPackageInstaller(['A: '], 'A'));
+    Print(TestPackageInstaller(['KittenService: CamelCaser', 'CamelCaser: '], 'CamelCaser, KittenService'));
+    Print(TestPackageInstaller(['A: ', 'B: C', 'C: '], 'A, C, B'));
+    Print(TestPackageInstaller(['A: ', 'B: ', 'C: ', 'D: ', 'E: ', 'F: '], 'A, B, C, D, E, F')); 
+    // 5
+    Print(TestPackageInstaller(['A: ', 'B: ', 'C: ', 'D: ', 'E: B', 'F: '], 'A, B, C, D, F, E'));
+    Print(TestPackageInstaller(['B: C', 'A: B', 'C: '], 'C, B, A'));
+    Print(TestPackageInstaller(['A: B', 'B: C', 'C: D', 'D: E', 'E: F', 'F: '], 'F, E, D, C, B, A'));
+    Print(TestPackageInstaller(['B: C', 'C: D', 'A: B', 'D: E', 'E: F', 'F: '], 'F, E, D, C, B, A'));
+    // Print(TestPackageInstaller(['A: B', 'B: A'], 'FAIL: Contains Cycle'));
+    Print(TestPackageInstaller(['A: ', 'B: A'], 'A, B'));
+    Print(TestPackageInstaller(['KittenService: ', 'Leetmeme: Cyberportal', 'Cyberportal: Ice', 'CamelCaser: KittenService', 'Fraudstream: Leetmeme', 'Ice: '], 'KittenService, Ice, Cyberportal, Leetmeme, CamelCaser, Fraudstream')); 
     // // 10
-    // Print(TestPackageInstaller(['D: ', 'C: D', 'B: C', 'A: B'], 'D, C, B, A'));
-    // Print(TestPackageInstaller(['B: C', 'C: D', 'D: ', 'A: B'], 'D, C, B, A'));
-    // Print(TestPackageInstaller(['B: C', 'C: D', 'D: ', 'A: D'], 'D, C, B, A'));
-    var alphabet = ['A: ', 'B: E', 'C: Z', 'D: A', 'E: F', 'F: X', 'X: B'];
+    Print(TestPackageInstaller(['D: ', 'C: D', 'B: C', 'A: B'], 'D, C, B, A'));
+    Print(TestPackageInstaller(['B: C', 'C: D', 'D: ', 'A: B'], 'D, C, B, A'));
+    Print(TestPackageInstaller(['B: C', 'C: D', 'D: ', 'A: D'], 'D, C, B, A'));
+    var alphabet = ['A: X', 'B: E', 'C: Z', 'D: A', 'E: F', 'F: X', 'X: B'];
     // Print(TestPackageInstaller(alphabet, 'FAIL: Contains Cycle'));
     alphabet = [
         'A: B', 'B: C', 'C: D', 'D: E', 'E: F', 'F: G', 'G: H', 'H: '
     ];
     Print(TestPackageInstaller(alphabet, 'H, G, F, E, D, C, B, A'));
+    // Print(TestPackageInstaller(['a: b', 'b: c', 'c: d', 'd: e', 'e: f', 'f: g', 'g: a'], 'FAIL: Contains Cycle'));
     Print(TestPackageInstaller(['KittenService: ', 'Leetmeme: Cyberportal', 'Cyberportal: Ice', 'CamelCaser: KittenService', 'Fraudstream: ', 'Ice: Leetmeme'], 'KittenService, Ice, Cyberportal, Leetmeme, CamelCaser, Fraudstream'));
 }
 
