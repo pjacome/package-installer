@@ -7,20 +7,30 @@
 var orderPackages = module.exports.PACKAGE_ORDER = function(packages) {
     var independentPackages = [];
     var dependentPackages = {};
-    packages.forEach(function(val, i) {
+    // packages.forEach(function(val, i) {
+    for(var i = 0; i < packages.length; ++i) {
         // The input is split at the occurrance of ": " because the write up
         // showed the input would be structured like that
-        var package = val.split(': ')[0];
-        var dependency = val.split(': ')[1];
+        var package = packages[i].split(': ')[0];
+        var dependency = packages[i].split(': ')[1];
         if(dependency === '') {
             independentPackages.push(package);
         } else {
+            try {
+                if(package === dependency) {
+                    // throw error if package depends on itself
+                    throw new Error('FAIL: Contains Cycle');
+                }
+            } catch(err) {
+                return err.message;
+            }
+
             dependentPackages[package] = {
                 d: dependency,  // d = dependency
                 v: false        // v = visited
             };
         }
-    });
+    }
 
     var stack = [];
     for(var package in dependentPackages) {
@@ -97,9 +107,12 @@ function HasDuplicates(array) {
     Runs all tests.
 */
 module.exports.RUN_TESTS = function() {
+    const CycleDetected = 'FAIL: Contains Cycle';
     Print('\n\t***************************\n\t** ... Running Tests ... **\n\t***************************');
     Print(TestPackageInstaller([], ''));
     Print(TestPackageInstaller(['A: '], 'A'));
+    Print(TestPackageInstaller(['Y: X'], 'X, Y'));
+    Print(TestPackageInstaller(['Z: Z'], CycleDetected));
     Print(TestPackageInstaller(['KittenService: CamelCaser', 'CamelCaser: '], 'CamelCaser, KittenService'));
     Print(TestPackageInstaller(['A: ', 'B: C', 'C: '], 'A, C, B'));
     Print(TestPackageInstaller(['A: ', 'B: ', 'C: ', 'D: ', 'E: ', 'F: '], 'A, B, C, D, E, F')); 
@@ -108,7 +121,7 @@ module.exports.RUN_TESTS = function() {
     Print(TestPackageInstaller(['B: C', 'A: B', 'C: '], 'C, B, A'));
     Print(TestPackageInstaller(['A: B', 'B: C', 'C: D', 'D: E', 'E: F', 'F: '], 'F, E, D, C, B, A'));
     Print(TestPackageInstaller(['B: C', 'C: D', 'A: B', 'D: E', 'E: F', 'F: '], 'F, E, D, C, B, A'));
-    Print(TestPackageInstaller(['A: B', 'B: A'], 'FAIL: Contains Cycle'));
+    Print(TestPackageInstaller(['A: B', 'B: A'], CycleDetected));
     Print(TestPackageInstaller(['A: ', 'B: A'], 'A, B'));
     Print(TestPackageInstaller(['KittenService: ', 'Leetmeme: Cyberportal', 'Cyberportal: Ice', 'CamelCaser: KittenService', 'Fraudstream: Leetmeme', 'Ice: '], 'KittenService, Ice, Cyberportal, Leetmeme, CamelCaser, Fraudstream')); 
     // 10
@@ -116,13 +129,13 @@ module.exports.RUN_TESTS = function() {
     Print(TestPackageInstaller(['B: C', 'C: D', 'D: ', 'A: B'], 'D, C, B, A'));
     Print(TestPackageInstaller(['B: C', 'C: D', 'D: ', 'A: D'], 'D, C, B, A'));
     var alphabet = ['A: X', 'B: E', 'C: Z', 'D: A', 'E: F', 'F: X', 'X: B'];
-    Print(TestPackageInstaller(alphabet, 'FAIL: Contains Cycle'));
+    Print(TestPackageInstaller(alphabet, CycleDetected));
     alphabet = [
         'A: B', 'B: C', 'C: D', 'D: E', 'E: F', 'F: G', 'G: H', 'H: '
     ];
     Print(TestPackageInstaller(alphabet, 'H, G, F, E, D, C, B, A'));
-    Print(TestPackageInstaller(['a: b', 'b: c', 'c: d', 'd: e', 'e: f', 'f: g', 'g: a'], 'FAIL: Contains Cycle'));
-    Print(TestPackageInstaller(['KittenService: ', 'Leetmeme: Cyberportal', 'Cyberportal: Ice', 'CamelCaser: KittenService', 'Fraudstream: ', 'Ice: Leetmeme'], 'FAIL: Contains Cycle'));
+    Print(TestPackageInstaller(['a: b', 'b: c', 'c: d', 'd: e', 'e: f', 'f: g', 'g: a'], CycleDetected));
+    Print(TestPackageInstaller(['KittenService: ', 'Leetmeme: Cyberportal', 'Cyberportal: Ice', 'CamelCaser: KittenService', 'Fraudstream: ', 'Ice: Leetmeme'], CycleDetected));
     Print(TestPackageInstaller(['C: D', 'A: B', 'D: F', 'G: ', 'E: G', 'F: ', 'B: E'], 'G, F, D, C, E, B, A'));
 }
 
