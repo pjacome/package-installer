@@ -34,6 +34,12 @@ var orderPackages = module.exports.PACKAGE_ORDER = function(packages) {
     }
 
     var list = independentPackages.concat(stack);
+    if(HasDuplicates(list)) {
+        throw 'FAIL: Contains Cycle';
+    }
+
+    // below is extra code to just conform to the output as shown in the write up
+    // otherwise list.toString() will suffice
     var result = '';
     for(var i = 0; i < list.length; ++i) {
         if(i === list.length - 1) {
@@ -44,43 +50,6 @@ var orderPackages = module.exports.PACKAGE_ORDER = function(packages) {
     }
 
     return result;
-}
-
-/*
-    Runs all tests.
-*/
-module.exports.RUN_TESTS = function() {
-    Print(TestPackageInstaller([], ''));
-    Print(TestPackageInstaller(['A: '], 'A'));
-    Print(TestPackageInstaller(['KittenService: CamelCaser', 'CamelCaser: '], 'CamelCaser, KittenService'));
-    Print(TestPackageInstaller(['A: ', 'B: C', 'C: '], 'A, C, B'));
-    Print(TestPackageInstaller(['A: ', 'B: ', 'C: ', 'D: ', 'E: ', 'F: '], 'A, B, C, D, E, F')); 
-    // 5
-    Print(TestPackageInstaller(['A: ', 'B: ', 'C: ', 'D: ', 'E: B', 'F: '], 'A, B, C, D, F, E'));
-    Print(TestPackageInstaller(['B: C', 'A: B', 'C: '], 'C, B, A'));
-    Print(TestPackageInstaller(['A: B', 'B: C', 'C: D', 'D: E', 'E: F', 'F: '], 'F, E, D, C, B, A'));
-    Print(TestPackageInstaller(['B: C', 'C: D', 'A: B', 'D: E', 'E: F', 'F: '], 'F, E, D, C, B, A'));
-    Print(TestPackageInstaller(['A: B', 'B: A'], 'A, B, A') + ': Contains a Cycle');
-    Print(TestPackageInstaller(['A: ', 'B: A'], 'A, B'));
-    Print(TestPackageInstaller(['KittenService: ', 'Leetmeme: Cyberportal', 'Cyberportal: Ice', 'CamelCaser: KittenService', 'Fraudstream: Leetmeme', 'Ice: '], 'KittenService, Ice, Cyberportal, Leetmeme, CamelCaser, Fraudstream')); 
-    // 10
-}
-
-/*
-    Tests the package installer
-    @input - an array of packages and their dependencies
-    @expected - the expected String after running the package installer
-    returns String - 'PASS' if the expected matches the result
-                   - 'FAIL' otherwise
-*/
-function TestPackageInstaller(input, expected) {
-    var result = orderPackages(input);
-    console.log(result + ' === ' + expected);
-    if(result === expected) {
-        return 'PASS';
-    }
-
-    return 'FAIL';
 }
 
 /*
@@ -102,6 +71,51 @@ function DeeperAndDeeper(map, start) {
         return w;
     }
     return [];
+}
+
+function HasDuplicates(array) {
+    return (new Set(array)).size !== array.length;
+}
+
+/*
+    Runs all tests.
+*/
+module.exports.RUN_TESTS = function() {
+    // Print(TestPackageInstaller([], ''));
+    // Print(TestPackageInstaller(['A: '], 'A'));
+    // Print(TestPackageInstaller(['KittenService: CamelCaser', 'CamelCaser: '], 'CamelCaser, KittenService'));
+    // Print(TestPackageInstaller(['A: ', 'B: C', 'C: '], 'A, C, B'));
+    // Print(TestPackageInstaller(['A: ', 'B: ', 'C: ', 'D: ', 'E: ', 'F: '], 'A, B, C, D, E, F')); 
+    // // 5
+    // Print(TestPackageInstaller(['A: ', 'B: ', 'C: ', 'D: ', 'E: B', 'F: '], 'A, B, C, D, F, E'));
+    // Print(TestPackageInstaller(['B: C', 'A: B', 'C: '], 'C, B, A'));
+    // Print(TestPackageInstaller(['A: B', 'B: C', 'C: D', 'D: E', 'E: F', 'F: '], 'F, E, D, C, B, A'));
+    // Print(TestPackageInstaller(['B: C', 'C: D', 'A: B', 'D: E', 'E: F', 'F: '], 'F, E, D, C, B, A'));
+    Print(TestPackageInstaller(['A: B', 'B: A'], 'A, B, A'));
+    // Print(TestPackageInstaller(['A: ', 'B: A'], 'A, B'));
+    // Print(TestPackageInstaller(['KittenService: ', 'Leetmeme: Cyberportal', 'Cyberportal: Ice', 'CamelCaser: KittenService', 'Fraudstream: Leetmeme', 'Ice: '], 'KittenService, Ice, Cyberportal, Leetmeme, CamelCaser, Fraudstream')); 
+    // // 10
+    // Print(TestPackageInstaller(['D: ', 'C: D', 'B: C', 'A: B'], 'D, C, B, A'));
+    // Print(TestPackageInstaller(['B: C', 'C: D', 'D: ', 'A: B'], 'D, C, B, A'));
+    // Print(TestPackageInstaller(['B: C', 'C: D', 'D: ', 'A: D'], 'D, C, B, A'));
+    Print(TestPackageInstaller(['KittenService: ', 'Leetmeme: Cyberportal', 'Cyberportal: Ice', 'CamelCaser: KittenService', 'Fraudstream: ', 'Ice: Leetmeme'], 'KittenService, Ice, Cyberportal, Leetmeme, CamelCaser, Fraudstream'));
+}
+
+/*
+    Tests the package installer
+    @input - an array of packages and their dependencies
+    @expected - the expected String after running the package installer
+    returns String - 'PASS' if the expected matches the result
+                   - 'FAIL' otherwise
+*/
+function TestPackageInstaller(input, expected) {
+    var result = orderPackages(input);
+    console.log(result + ' === ' + expected);
+    if(result === expected) {
+        return 'PASS';
+    }
+
+    return '>>> FAIL <<<';
 }
 
 /*
