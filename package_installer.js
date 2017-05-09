@@ -7,10 +7,6 @@
 
 var orderPackages = module.exports.PACKAGE_ORDER = function(packages) {
     // 1. verify 'packages' is of type array
-    // 2. check if 'packages' is not equal to length 0
-    // 3. check if 'packages' is equal to size 1
-    // 4. else continue
-
     // section 1.
 
     // section 2.
@@ -22,15 +18,28 @@ var orderPackages = module.exports.PACKAGE_ORDER = function(packages) {
         return packages[0].split(': ')[0];
 
     // section 4.
+    var dependentList = '';
+    var nonDependentList = '';
+    var hash = {};
+
     packages.forEach(function(val, i) {
-        // console.log(i+') ', val);
         var package = val.split(': ')[0];
         var dependency = val.split(': ')[1];
-        // console.log(package + ' -> ' + dependency);
+        if(dependency === '') {
+            nonDependentList += package + ', ';
+        } else {
+            hash[package] = {dep: dependency, marked: false};
+            // dependentList += package + ', ';
+        }
     });
+    
+    dependentList = OrderDependentPackages(hash);
+    
+    var list = nonDependentList + dependentList;
+    // remove the last occurring ", "
+    list = list.substring(0, list.length - 2);
 
-    // -1 is a placeholder while tests are set up
-    return '-1';
+    return list;
 }
 
 /*
@@ -41,13 +50,14 @@ module.exports.RUN_TESTS = function() {
     Print(TestPackageInstaller([], ''));
     Print(TestPackageInstaller(['A: '], 'A'));
     Print(TestPackageInstaller(['KittenService: CamelCaser', 'CamelCaser: '], 'CamelCaser, KittenService'));
-    Print(TestPackageInstaller([], 'A, C, B'));
-    Print(TestPackageInstaller([], 'A, B, C, D, E, F')); 
+    Print(TestPackageInstaller(['A: ', 'B: C', 'C: '], 'A, C, B'));
+    Print(TestPackageInstaller(['A: ', 'B: ', 'C: ', 'D: ', 'E: ', 'F: '], 'A, B, C, D, E, F')); 
     // 5
-    Print(TestPackageInstaller([], 'A, B, C, D, F, E'));
-    Print(TestPackageInstaller([], 'F, E, D, C, B, A'));
-    Print(TestPackageInstaller(['A: B', 'B: A'], 'A, B, A') + ': Contains a Cycle');
-    Print(TestPackageInstaller(['A: ', 'B: A'], 'A, B'));
+    Print(TestPackageInstaller(['A: ', 'B: ', 'C: ', 'D: ', 'E: B', 'F: '], 'A, B, C, D, F, E'));
+    Print(TestPackageInstaller(['B: C', 'A: B', 'C: '], 'C, B, A'));
+    // Print(TestPackageInstaller([], 'F, E, D, C, B, A'));
+    // Print(TestPackageInstaller(['A: B', 'B: A'], 'A, B, A') + ': Contains a Cycle');
+    // Print(TestPackageInstaller(['A: ', 'B: A'], 'A, B'));
     Print(TestPackageInstaller(['KittenService: ', 'Leetmeme: Cyberportal', 'Cyberportal: Ice', 'CamelCaser: KittenService', 'Fraudstream: Leetmeme', 'Ice: '], 'KittenService, Ice, Cyberportal, Leetmeme, CamelCaser, Fraudstream')); 
     // 10
 }
@@ -62,12 +72,36 @@ module.exports.RUN_TESTS = function() {
 
 function TestPackageInstaller(input, expected) {
     var result = orderPackages(input);
-
-    if(result.match(expected)) {
+    console.log(result + ' === ' + expected);
+    if(result === expected) {
         return 'PASS';
     }
 
     return 'FAIL';
+}
+
+/*
+    Orders only the packages that have dependencies
+    @map - contains the packages that need to be ordered correctly
+    returns String - which will be the order of the packages
+*/
+
+function OrderDependentPackages(map) {
+    var i = '';
+    // Print('>>> CHECKING <<<');
+    // Print(map);
+    for(var package in map) {
+        if(map[package.dep]) {
+            if(map[package.dep].marked) {
+                i += package + ', ';
+            }
+        } else {
+            i += package + ', ';
+            map[package].marked = true;
+        }
+    }
+    // Print('>>> DONE <<<');
+    return i;
 }
 
 /*
