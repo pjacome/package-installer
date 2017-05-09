@@ -4,11 +4,12 @@
     returns String - the string will be the correct order in which the packages
                    - need to be installed
 */
-
 var orderPackages = module.exports.PACKAGE_ORDER = function(packages) {
     var independentPackages = [];
     var dependentPackages = {};
     packages.forEach(function(val, i) {
+        // The input is split at the occurrance of ": " because the write up
+        // showed the input would be structured like so
         var package = val.split(': ')[0];
         var dependency = val.split(': ')[1];
         if(dependency === '') {
@@ -34,12 +35,18 @@ var orderPackages = module.exports.PACKAGE_ORDER = function(packages) {
     }
 
     var list = independentPackages.concat(stack);
-    if(HasDuplicates(list)) {
-        throw 'FAIL: Contains Cycle: ' + list.toString();
+    try {
+        if(HasDuplicates(list)) {
+            // throw error if packages contain a cycle
+            throw new Error('FAIL: Contains Cycle');
+        }
+    } catch(err) {
+        // console.log(err.message);
+        return err.message;
     }
 
-    // below is extra code to just conform to the output as shown in the write up
-    // otherwise list.toString() will suffice
+    // below is extra code simply to conform to the output as shown in the write up
+    // otherwise "return list.toString()" will suffice
     var result = '';
     for(var i = 0; i < list.length; ++i) {
         if(i === list.length - 1) {
@@ -73,6 +80,12 @@ function DeeperAndDeeper(map, start) {
     return [];
 }
 
+/*
+    Checks to see if the list has any duplicates
+    @array - the ordered list of packages to be installed
+    returns Boolean - if TRUE then a cycle exists
+                      if FALSE then no cycle was detected
+*/
 function HasDuplicates(array) {
     return (new Set(array)).size !== array.length;
 }
@@ -92,21 +105,22 @@ module.exports.RUN_TESTS = function() {
     Print(TestPackageInstaller(['B: C', 'A: B', 'C: '], 'C, B, A'));
     Print(TestPackageInstaller(['A: B', 'B: C', 'C: D', 'D: E', 'E: F', 'F: '], 'F, E, D, C, B, A'));
     Print(TestPackageInstaller(['B: C', 'C: D', 'A: B', 'D: E', 'E: F', 'F: '], 'F, E, D, C, B, A'));
-    // Print(TestPackageInstaller(['A: B', 'B: A'], 'FAIL: Contains Cycle'));
+    Print(TestPackageInstaller(['A: B', 'B: A'], 'FAIL: Contains Cycle'));
     Print(TestPackageInstaller(['A: ', 'B: A'], 'A, B'));
     Print(TestPackageInstaller(['KittenService: ', 'Leetmeme: Cyberportal', 'Cyberportal: Ice', 'CamelCaser: KittenService', 'Fraudstream: Leetmeme', 'Ice: '], 'KittenService, Ice, Cyberportal, Leetmeme, CamelCaser, Fraudstream')); 
-    // // 10
+    // 10
     Print(TestPackageInstaller(['D: ', 'C: D', 'B: C', 'A: B'], 'D, C, B, A'));
     Print(TestPackageInstaller(['B: C', 'C: D', 'D: ', 'A: B'], 'D, C, B, A'));
     Print(TestPackageInstaller(['B: C', 'C: D', 'D: ', 'A: D'], 'D, C, B, A'));
     var alphabet = ['A: X', 'B: E', 'C: Z', 'D: A', 'E: F', 'F: X', 'X: B'];
-    // Print(TestPackageInstaller(alphabet, 'FAIL: Contains Cycle'));
+    Print(TestPackageInstaller(alphabet, 'FAIL: Contains Cycle'));
     alphabet = [
         'A: B', 'B: C', 'C: D', 'D: E', 'E: F', 'F: G', 'G: H', 'H: '
     ];
     Print(TestPackageInstaller(alphabet, 'H, G, F, E, D, C, B, A'));
-    // Print(TestPackageInstaller(['a: b', 'b: c', 'c: d', 'd: e', 'e: f', 'f: g', 'g: a'], 'FAIL: Contains Cycle'));
-    Print(TestPackageInstaller(['KittenService: ', 'Leetmeme: Cyberportal', 'Cyberportal: Ice', 'CamelCaser: KittenService', 'Fraudstream: ', 'Ice: Leetmeme'], 'KittenService, Ice, Cyberportal, Leetmeme, CamelCaser, Fraudstream'));
+    Print(TestPackageInstaller(['a: b', 'b: c', 'c: d', 'd: e', 'e: f', 'f: g', 'g: a'], 'FAIL: Contains Cycle'));
+    Print(TestPackageInstaller(['KittenService: ', 'Leetmeme: Cyberportal', 'Cyberportal: Ice', 'CamelCaser: KittenService', 'Fraudstream: ', 'Ice: Leetmeme'], 'FAIL: Contains Cycle'));
+    Print(TestPackageInstaller(['C: D', 'A: B', 'D: F', 'G: ', 'E: G', 'F: ', 'B: E'], 'G, F, D, C, E, B, A'));
 }
 
 /*
@@ -118,11 +132,12 @@ module.exports.RUN_TESTS = function() {
 */
 function TestPackageInstaller(input, expected) {
     var result = orderPackages(input);
-    if(result === expected) {
+    if(result === expected && result === 'FAIL: Contains Cycle')
+        return result;
+    if(result === expected)
         return 'PASS';
-    }
 
-    return '>>> FAIL <<<';
+    return 'FAIL';
 }
 
 /*
